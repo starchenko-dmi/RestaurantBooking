@@ -1,15 +1,13 @@
 from django.urls import path
-from django.http import HttpResponse
+from . import views
 
 app_name = 'users'
 
-# Временные заглушки (view-функции)
-def placeholder_view(request):
-    return HttpResponse('Страница в разработке')
-
 urlpatterns = [
-    path('login/', placeholder_view, name='login'),
-    path('register/', placeholder_view, name='register'),
-    path('profile/', placeholder_view, name='profile'),
-    path('logout/', placeholder_view, name='logout'),
+    path('register/', views.register_view, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.profile_view, name='profile'),
+    path('profile/edit/', views.profile_edit_view, name='profile_edit'),
+    path('profile/delete/', views.profile_delete_view, name='profile_delete'),
 ]
