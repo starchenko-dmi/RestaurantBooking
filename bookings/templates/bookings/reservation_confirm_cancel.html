@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Отмена бронирования - Ресторан{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> Отмена бронирования
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Вы уверены, что хотите отменить бронирование?</p>
+
+                        <div class="alert alert-light border">
+                            <ul class="mb-0">
+                                <li><strong>Дата:</strong> {{ reservation.date|date:"d.m.Y" }}</li>
+                                <li><strong>Время:</strong> {{ reservation.time|time:"H:i" }}</li>
+                                <li><strong>Столик:</strong> {{ reservation.table.number }}</li>
+                            </ul>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-danger btn-lg">
+                                    <i class="bi bi-check-circle"></i> Да, отменить
+                                </button>
+                                <a href="{% url 'bookings:reservation_detail' reservation.pk %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Нет, вернуться
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронирование #{{ reservation.id }} - Ресторан{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="bi bi-ticket-detailed"></i> Бронирование #{{ reservation.id }}
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="text-muted">Детали</h5>
+                                <ul class="list-unstyled">
+                                    <li><strong>Дата:</strong> {{ reservation.date|date:"d.m.Y" }}</li>
+                                    <li><strong>Время:</strong> {{ reservation.time|time:"H:i" }} - {{ reservation.end_time|time:"H:i" }}</li>
+                                    <li><strong>Столик:</strong> {{ reservation.table.number }} ({{ reservation.table.get_zone_display }})</li>
+                                    <li><strong>Гостей:</strong> {{ reservation.guests_count }} чел.</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-muted">Статус</h5>
+                                <span class="badge
+                                    {% if reservation.status == 'confirmed' %}bg-success
+                                    {% elif reservation.status == 'pending' %}bg-warning
+                                    {% elif reservation.status == 'cancelled' %}bg-danger
+                                    {% elif reservation.status == 'completed' %}bg-info
+                                    {% else %}bg-secondary{% endif %}
+                                    fs-6">
+                                    {{ reservation.get_status_display }}
+                                </span>
+                                <ul class="list-unstyled mt-3">
+                                    <li><strong>Создано:</strong> {{ reservation.created_at|date:"d.m.Y H:i" }}</li>
+                                    <li><strong>Обновлено:</strong> {{ reservation.updated_at|date:"d.m.Y H:i" }}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {% if reservation.comment %}
+                            <div class="alert alert-light border">
+                                <h6 class="text-muted">Комментарий</h6>
+                                <p class="mb-0">{{ reservation.comment }}</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-4">
+                            <a href="{% url 'bookings:reservation_list' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left"></i> Назад к списку
+                            </a>
+                            {% if reservation.can_cancel %}
+                                <a href="{% url 'bookings:reservation_cancel' reservation.pk %}" class="btn btn-outline-danger">
+                                    <i class="bi bi-x-circle"></i> Отменить бронирование
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
