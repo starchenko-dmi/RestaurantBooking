@@ -14,8 +14,35 @@ def reservation_create(request):
         form = ReservationForm(request.POST)
         if form.is_valid():
             date = form.cleaned_data['date']
-            time_value = form.cleaned_data['time']  # ← Переименовали
+            time_value = form.cleaned_data['time']
+            duration = form.cleaned_data['duration']
             guests_count = form.cleaned_data['guests_count']
+
+            # 🔥 Создаём datetime объекты (дата + время)
+            start_datetime = datetime.combine(date, time_value)
+            end_datetime = start_datetime + timedelta(hours=duration)
+
+            # Время закрытия ресторана (23:00 в день бронирования)
+            closing_datetime = datetime.combine(date, time_class(23, 0))
+            opening_datetime = datetime.combine(date, time_class(10, 0))
+
+            # Проверяем время начала
+            if start_datetime < opening_datetime:
+                form.add_error('time', 'Ресторан открывается в 10:00')
+                return render(request, 'bookings/reservation_create.html', {'form': form})
+
+            # 🔥 Проверяем время окончания (с учётом перехода за полночь!)
+            if end_datetime > closing_datetime:
+                max_hours = (closing_datetime - start_datetime).seconds // 3600
+                form.add_error('duration',
+                               f'Бронирование закончится {end_datetime.strftime("%d.%m.%Y в %H:%M")}, '
+                               f'что после закрытия ({closing_datetime.strftime("%H:%M")}). '
+                               f'Максимальная длительность — {max_hours} ч.'
+                               )
+                return render(request, 'bookings/reservation_create.html', {'form': form})
+
+            # Рассчитываем время окончания
+            end_time_value = end_datetime.time()
 
             available_tables = Table.objects.filter(
                 is_active=True,
@@ -24,7 +51,7 @@ def reservation_create(request):
 
             available_table_ids = []
             for table in available_tables:
-                if table.is_available(date, time_value):
+                if table.is_available(date, time_value, duration):
                     available_table_ids.append(table.id)
 
             if not available_table_ids:
@@ -33,7 +60,9 @@ def reservation_create(request):
 
             request.session['reservation_data'] = {
                 'date': date.isoformat(),
-                'time': time_value.isoformat(),  # ← Сохраняем в ISO формате
+                'time': time_value.isoformat(),
+                'duration': duration,
+                'end_time': end_time_value.isoformat(),
                 'guests_count': guests_count,
                 'comment': form.cleaned_data.get('comment', '')
             }
@@ -56,26 +85,33 @@ def table_select(request):
 
     date = timezone.datetime.fromisoformat(reservation_data['date']).date()
 
-    # Исправлено: парсим время правильно
+    # Парсим время
     time_str = reservation_data['time']
     if 'T' in time_str:
-        # Полный ISO формат (2024-03-21T18:00:00)
         time_value = timezone.datetime.fromisoformat(time_str).time()
     else:
-        # Только время (18:00:00 или 18:00)
-        if len(time_str) == 5:  # 18:00
+        if len(time_str) == 5:
             time_value = datetime.strptime(time_str, '%H:%M').time()
-        else:  # 18:00:00
+        else:
             time_value = datetime.strptime(time_str, '%H:%M:%S').time()
+
+    # Получаем длительность и время окончания
+    duration = reservation_data.get('duration', 2)
+    end_time_str = reservation_data.get('end_time')
+    if end_time_str:
+        if 'T' in end_time_str:
+            end_time_value = timezone.datetime.fromisoformat(end_time_str).time()
+        else:
+            end_time_value = datetime.strptime(end_time_str, '%H:%M:%S').time()
+    else:
+        end_time_value = (datetime.combine(date, time_value) + timedelta(hours=duration)).time()
 
     guests_count = reservation_data['guests_count']
 
     if request.method == 'POST':
-        form = TableChoiceForm(request.POST, date=date, time=time_value, guests_count=guests_count)
+        form = TableChoiceForm(request.POST, date=date, time=time_value, guests_count=guests_count, duration=duration)
         if form.is_valid():
             table = form.cleaned_data['table']
-
-            end_time_value = (datetime.combine(date, time_value) + timedelta(hours=2)).time()
 
             reservation = Reservation.objects.create(
                 user=request.user,
@@ -90,18 +126,19 @@ def table_select(request):
 
             del request.session['reservation_data']
 
-            messages.success(request, f'Столик {table.number} забронирован! Ожидайте подтверждения.')
+            messages.success(request, f'Столик {table.number} забронирован на {duration} ч.! Ожидайте подтверждения.')
             return redirect('bookings:reservation_detail', pk=reservation.pk)
     else:
-        form = TableChoiceForm(date=date, time=time_value, guests_count=guests_count)
+        form = TableChoiceForm(date=date, time=time_value, guests_count=guests_count, duration=duration)
 
     return render(request, 'bookings/table_select.html', {
         'form': form,
         'date': date,
         'time': time_value,
+        'duration': duration,
+        'end_time': end_time_value,
         'guests_count': guests_count
     })
-
 
 @login_required
 def reservation_list(request):

@@ -1,0 +1,54 @@
+[run]
+# Исходный код для анализа
+source = .
+
+# Файлы и папки, которые НЕ нужно учитывать
+omit =
+    */migrations/*
+    */tests/*
+    */__pycache__/*
+    */venv/*
+    */virtualenv/*
+    manage.py
+    */apps.py
+    */admin.py
+    */__init__.py
+    config/*
+    */settings.py
+    */urls.py
+    */wsgi.py
+    */asgi.py
+
+[report]
+# Формат отчёта
+precision = 2
+
+# Сортировка по имени файла
+sort = Cover
+
+# Показывать пропущенные строки
+show_missing = True
+
+# Исключить определённые паттерны строк
+exclude_lines =
+    # Обязательно переопределяем pragma: no cover
+    pragma: no cover
+
+    # Не считаем за код отладочные конструкции
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+
+    # Не считаем условные блоки, зависящие от настроек
+    if settings.DEBUG
+    if DEBUG
+
+    # Не считаем код только для тестов
+    if __name__ == .__main__.:
+
+[html]
+# Директория для HTML-отчёта
+directory = htmlcov
+
+# Заголовок HTML-страницы
+title = Restaurant Booking Coverage Report

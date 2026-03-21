@@ -14,6 +14,15 @@
                         </h2>
                     </div>
                     <div class="card-body">
+                        <!-- Общие ошибки формы -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
                         <form method="post">
                             {% csrf_token %}
 
@@ -23,7 +32,7 @@
                                 </label>
                                 {{ form.date }}
                                 {% if form.date.errors %}
-                                    <div class="text-danger small">{{ form.date.errors.0 }}</div>
+                                    <div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>
                                 {% endif %}
                             </div>
 
@@ -33,9 +42,22 @@
                                 </label>
                                 {{ form.time }}
                                 {% if form.time.errors %}
-                                    <div class="text-danger small">{{ form.time.errors.0 }}</div>
+                                    <div class="text-danger small mt-1">{{ form.time.errors.0 }}</div>
                                 {% endif %}
                                 <div class="form-text">Ресторан работает с 10:00 до 23:00</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.duration.id_for_label }}" class="form-label">
+                                    {{ form.duration.label }}
+                                </label>
+                                {{ form.duration }}
+                                {% if form.duration.errors %}
+                                    <div class="text-danger small mt-1">{{ form.duration.errors.0 }}</div>
+                                {% endif %}
+                                {% if form.duration.help_text %}
+                                    <div class="form-text">{{ form.duration.help_text }}</div>
+                                {% endif %}
                             </div>
 
                             <div class="mb-3">
@@ -44,7 +66,7 @@
                                 </label>
                                 {{ form.guests_count }}
                                 {% if form.guests_count.errors %}
-                                    <div class="text-danger small">{{ form.guests_count.errors.0 }}</div>
+                                    <div class="text-danger small mt-1">{{ form.guests_count.errors.0 }}</div>
                                 {% endif %}
                             </div>
 
@@ -54,7 +76,7 @@
                                 </label>
                                 {{ form.comment }}
                                 {% if form.comment.errors %}
-                                    <div class="text-danger small">{{ form.comment.errors.0 }}</div>
+                                    <div class="text-danger small mt-1">{{ form.comment.errors.0 }}</div>
                                 {% endif %}
                             </div>
 

@@ -59,8 +59,8 @@ class Table(models.Model):
         Returns:
             bool: True если столик свободен
         """
-        start_time = timezone.make_aware(timezone.datetime.combine(date, time))
-        end_time = start_time + timedelta(hours=duration)
+        start_datetime = timezone.make_aware(timezone.datetime.combine(date, time))
+        end_datetime = start_datetime + timedelta(hours=duration)
 
         # Ищем пересекающиеся бронирования
         overlapping_reservations = Reservation.objects.filter(
@@ -70,13 +70,12 @@ class Table(models.Model):
         ).filter(
             # Пересечение по времени
             models.Q(
-                time__lt=end_time.time(),
-                end_time__gt=start_time.time()
+                time__lt=end_datetime.time(),
+                end_time__gt=start_datetime.time()
             )
         )
 
         return not overlapping_reservations.exists()
-
 
 class Reservation(models.Model):
     """Модель бронирования столика"""

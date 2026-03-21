@@ -19,7 +19,8 @@
                             <h5 class="alert-heading">Детали бронирования</h5>
                             <ul class="mb-0">
                                 <li><strong>Дата:</strong> {{ date|date:"d.m.Y" }}</li>
-                                <li><strong>Время:</strong> {{ time|time:"H:i" }}</li>
+                                <li><strong>Время:</strong> {{ time|time:"H:i" }} - {{ end_time|time:"H:i" }}</li>
+                                <li><strong>Длительность:</strong> {{ duration }} ч.</li>
                                 <li><strong>Гостей:</strong> {{ guests_count }} чел.</li>
                             </ul>
                         </div>

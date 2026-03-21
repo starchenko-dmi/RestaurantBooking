@@ -231,6 +231,7 @@ class ReservationViewTests(TestCase):
         data = {
             'date': self.tomorrow.isoformat(),
             'time': '18:00',
+            'duration': 2,
             'guests_count': 2,
             'comment': 'Тестовое бронирование'
         }
