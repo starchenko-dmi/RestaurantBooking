@@ -48,3 +48,9 @@ htmlcov/
 # Docker
 __pycache__/
 *.pyc
+
+# Gunicorn
+*.pid
+*.ctl
+gunicorn.pid
+gunicorn.ctl
