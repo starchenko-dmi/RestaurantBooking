@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Ресторан{% endblock %}</title>
@@ -11,20 +12,286 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
+        /* ===== Коричнево-красная тема ===== */
+
+        /* Навигация */
+        .navbar {
+            background: linear-gradient(135deg, #5D4037 0%, #8B4513 50%, #A52A2A 100%) !important;
+            box-shadow: 0 3px 15px rgba(139, 69, 19, 0.4);
+            padding: 12px 0;
+        }
+
+        .navbar-brand {
+            color: #FFF8DC !important;
+            font-weight: 700;
+            font-size: 1.4rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .navbar-brand i {
+            color: #FFD700;
+        }
+
+        .nav-link {
+            color: rgba(255, 248, 220, 0.95) !important;
+            font-weight: 500;
+            padding: 8px 16px !important;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #FFD700 !important;
+            background: rgba(255, 215, 0, 0.15);
+        }
+
+        .navbar-toggler {
+            border-color: rgba(255, 248, 220, 0.5);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 248, 220, 0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Hero секция с фоном ресторана */
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://source.unsplash.com/1600x900/?restaurant');
+            /* Лёгкое затемнение для читаемости текста */
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.3) 100%),
+                        url('{% static "img/restaurant-hero.jpg" %}') center/cover no-repeat;
             background-size: cover;
             background-position: center;
+            color: #FFF8DC;
+            padding: 140px 0 100px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            position: relative;
+}
+
+        /* Фолбэк, если фото не загрузилось */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;  /* Убрал градиент */
+            z-index: 0;
+            opacity: 0;  /* Полностью невидимый */
+        }
+
+        .hero-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section h1,
+        .hero-section .display-4 {
+            color: #FFD700 !important;  /* Золотой текст */
+            text-shadow: 3px 3px 8px rgba(0,0,0,0.9);
+        }
+
+        .hero-section .lead {
+            color: #FFFFFF !important;  /* Белый текст */
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+        }
+
+        /* Кнопка бронирования */
+        .btn-primary {
+            background: linear-gradient(135deg, #8B4513 0%, #A52A2A 100%);
+            border: 2px solid #DEB887;
             color: white;
-            padding: 100px 0;
+            font-weight: 600;
+            padding: 12px 32px;
+            box-shadow: 0 4px 20px rgba(139, 69, 19, 0.5);
+            transition: all 0.3s ease;
         }
-        .navbar-brand {
-            font-weight: bold;
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(139, 69, 19, 0.7);
+            background: linear-gradient(135deg, #A52A2A 0%, #8B4513 100%);
+            border-color: #FFD700;
+            color: white;
         }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-primary {
+            color: #8B4513;
+            border-color: #8B4513;
+        }
+
+        .btn-outline-primary:hover {
+            background: #8B4513;
+            color: white;
+        }
+
+        /* Подвал */
         footer {
-            background-color: #212529;
+            background: linear-gradient(135deg, #3E2723 0%, #5D4037 50%, #8B4513 100%);
+            color: #FFF8DC;
+            padding: 50px 0 25px;
+            margin-top: 60px;
+        }
+
+        footer h5 {
+            color: #FFD700;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        footer a {
+            color: #FFD700;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: #FFA500;
+            text-decoration: none;
+        }
+
+        footer .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 215, 0, 0.15);
+            margin: 0 5px;
+            transition: all 0.3s;
+        }
+
+        footer .social-links a:hover {
+            background: #FFD700;
+            color: #5D4037 !important;
+            transform: translateY(-3px);
+        }
+
+        footer .footer-bottom {
+            border-top: 1px solid rgba(255, 248, 220, 0.2);
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+
+        /* Карточки */
+        .card {
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.2);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #8B4513 0%, #A52A2A 100%);
             color: white;
-            padding: 30px 0;
+            font-weight: 600;
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        /* Секции */
+        section {
+            padding: 70px 0;
+        }
+
+        section.bg-light {
+            background: linear-gradient(135deg, #FFF8DC 0%, #F5E6D3 100%) !important;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4, h5 {
+            color: #5D4037;
+        }
+
+        h2 {
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #8B4513, #A52A2A);
+            border-radius: 2px;
+        }
+
+        /* Формы */
+        .form-control:focus {
+            border-color: #8B4513;
+            box-shadow: 0 0 0 0.25rem rgba(139, 69, 19, 0.25);
+        }
+
+        /* Алерты */
+        .alert {
+            border-left: 4px solid #8B4513;
+            border-radius: 8px;
+        }
+
+        .alert-success {
+            background: #f8fff8;
+            border-color: #28a745;
+        }
+
+        .alert-danger {
+            background: #fff8f8;
+            border-color: #dc3545;
+        }
+
+        .alert-warning {
+            background: #fffdf8;
+            border-color: #ffc107;
+        }
+
+        /* Анимация появления */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-section .container > * {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .hero-section .container > *:nth-child(2) { animation-delay: 0.2s; }
+        .hero-section .container > *:nth-child(3) { animation-delay: 0.4s; }
+
+        /* Адаптив */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 100px 0 70px;
+            }
+
+            .hero-section .display-4 {
+                font-size: 2.5rem;
+            }
+
+            .navbar-nav {
+                text-align: center;
+            }
+
+            .nav-link {
+                padding: 6px 12px !important;
+            }
         }
     </style>
 
@@ -32,38 +299,56 @@
 </head>
 <body>
     <!-- Навигация -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'core:home' %}">
-                <i class="bi bi-cup-hot"></i> Ресторан
+                <i class="bi bi-cup-hot-fill"></i> Ресторан
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'core:home' %}">Главная</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
+                            <i class="bi bi-house-door me-1"></i>Главная
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'core:about' %}">О ресторане</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'core:about' %}">
+                            <i class="bi bi-info-circle me-1"></i>О ресторане
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'core:contacts' %}">Контакты</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'core:contacts' %}">
+                            <i class="bi bi-geo-alt me-1"></i>Контакты
+                        </a>
                     </li>
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'users:profile' %}">Личный кабинет</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'users:logout' %}">Выход</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-1"></i>{{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'users:profile' %}">
+                                <i class="bi bi-person me-2"></i>Личный кабинет
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'users:logout' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Выход
+                            </a></li>
+                        </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'users:login' %}">Вход</a>
+                        <a class="nav-link" href="{% url 'users:login' %}">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Вход
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'users:register' %}">Регистрация</a>
+                        <a class="btn btn-sm btn-outline-light ms-2" href="{% url 'users:register' %}">
+                            <i class="bi bi-person-plus me-1"></i>Регистрация
+                        </a>
                     </li>
                     {% endif %}
                 </ul>
@@ -75,9 +360,13 @@
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
+            {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
+            {% elif message.tags == 'info' %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% endfor %}
     </div>
@@ -90,25 +379,51 @@
 
     <!-- Подвал -->
     <footer>
-        <div class="container text-center">
-            {% load core_tags %}
-            {% get_restaurant_settings as settings %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5><i class="bi bi-cup-hot-fill me-2"></i>Ресторан</h5>
+                    <p class="small opacity-75">
+                        Уютная атмосфера, изысканная кухня и безупречный сервис.
+                        Ждём вас в гости!
+                    </p>
+                </div>
 
-            <p>&copy; 2026 Ресторан. Все права защищены.</p>
-            <p class="small">
-                <i class="bi bi-clock"></i>
-                Режим работы: {{ settings.opening_time|date:"H:i" }} - {{ settings.closing_time|date:"H:i" }}
-                {% if settings.closes_next_day %}(+1 день){% endif %}
-            </p>
-            <p>
-                <a href="#" class="text-white me-3"><i class="bi bi-telegram"></i> Telegram</a>
-                <a href="#" class="text-white me-3"><i class="bi bi-whatsapp"></i> WhatsApp</a>
-                <a href="#" class="text-white"><i class="bi bi-instagram"></i> Instagram</a>
-            </p>
-            <p class="small text-muted">
-                <a href="#" class="text-white-50">Политика конфиденциальности</a> |
-                <a href="#" class="text-white-50">Публичная оферта</a>
-            </p>
+                <div class="col-md-4 mb-4">
+                    <h5><i class="bi bi-clock me-2"></i>Режим работы</h5>
+                    {% load core_tags %}
+                    {% get_restaurant_settings as settings %}
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="bi bi-calendar-check me-2 text-warning"></i>
+                            Ежедневно
+                        </li>
+                        <li>
+                            <i class="bi bi-clock me-2 text-warning"></i>
+                            {{ settings.opening_time|date:"H:i" }} - {{ settings.closing_time|date:"H:i" }}
+                            {% if settings.closes_next_day %}<span class="badge bg-warning text-dark ms-1"></span>{% endif %}
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <h5><i class="bi bi-share me-2"></i>Мы в соцсетях</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white" title="Telegram"><i class="bi bi-telegram"></i></a>
+                        <a href="#" class="text-white" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                        <a href="#" class="text-white" title="VK"><i class="bi bi-vk"></i></a>
+                        <a href="#" class="text-white" title="Instagram"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom text-center small opacity-75">
+                <p class="mb-2">&copy; 2026 Ресторан. Все права защищены.</p>
+                <p class="mb-0">
+                    <a href="#" class="text-white-50 me-2">Политика конфиденциальности</a> |
+                    <a href="#" class="text-white-50 ms-2">Публичная оферта</a>
+                </p>
+            </div>
         </div>
     </footer>
 

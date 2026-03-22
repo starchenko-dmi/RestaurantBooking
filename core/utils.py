@@ -1,5 +1,30 @@
-from .models import RestaurantSettings
-from datetime import datetime, timedelta
+from .models import RestaurantSettings, SiteContent
+
+
+def get_content(key, default=''):
+    """
+    Хелпер для получения контента по ключу
+
+    Если запись не существует — создаёт её с default значением
+
+    Args:
+        key: Ключ контента (например, 'about_history')
+        default: Значение по умолчанию
+
+    Returns:
+        str: Контент или значение по умолчанию
+    """
+    try:
+        content = SiteContent.objects.get(key=key, is_active=True)
+        return content.content or default
+    except SiteContent.DoesNotExist:
+        # Авто-создаём запись с дефолтным значением
+        SiteContent.objects.create(
+            key=key,
+            content=default,
+            is_active=True
+        )
+        return default
 
 
 def get_restaurant_settings():

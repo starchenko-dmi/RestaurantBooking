@@ -43,7 +43,7 @@
                         <i class="bi bi-clock text-primary"></i>
                         <strong>Часы работы:</strong>
                         {{ settings.opening_time|date:"H:i" }} - {{ settings.closing_time|date:"H:i" }}
-                        {% if settings.closes_next_day %}(+1 день){% endif %}
+                        {% if settings.closes_next_day %}{% endif %}
                     </li>
                 </ul>
             </div>

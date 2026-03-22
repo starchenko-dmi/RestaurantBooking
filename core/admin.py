@@ -1,27 +1,30 @@
 from django.contrib import admin
 from .models import SiteContent, TeamMember, Service, RestaurantSettings
 
+from django.contrib import admin
+from .models import SiteContent, TeamMember, Service, RestaurantSettings
+
 
 @admin.register(SiteContent)
 class SiteContentAdmin(admin.ModelAdmin):
-    list_display = ('title', 'key', 'content_type', 'is_active', 'updated_at')
-    list_filter = ('content_type', 'is_active')
-    search_fields = ('title', 'key', 'text_value')
+    list_display = ('key', 'title', 'is_active', 'updated_at')
+    list_filter = ('is_active', 'key')
+    search_fields = ('title', 'content')
     list_editable = ('is_active',)
-    prepopulated_fields = {'key': ('title',)}
+
     fieldsets = (
         ('Основное', {
-            'fields': ('title', 'key', 'content_type', 'is_active')
+            'fields': ('key', 'title', 'content')
         }),
-        ('Контент', {
-            'fields': ('text_value', 'image_value')
+        ('Статус', {
+            'fields': ('is_active',)
         }),
         ('Мета', {
-            'fields': ('created_at', 'updated_at'),
+            'fields': ('updated_at',),
             'classes': ('collapse',)
         }),
     )
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('updated_at',)
 
 
 @admin.register(TeamMember)

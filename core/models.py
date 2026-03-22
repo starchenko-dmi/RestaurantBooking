@@ -5,49 +5,33 @@ from datetime import time, datetime, timedelta
 
 
 class SiteContent(models.Model):
-    """Модель для управления контентом сайта через админку"""
+    """Контент сайта (история, миссия и т.д.)"""
 
     CONTENT_TYPE_CHOICES = [
-        ('text', 'Текст'),
-        ('image', 'Изображение'),
-        ('html', 'HTML'),
+        ('about_history', 'История ресторана'),
+        ('about_mission', 'Миссия'),
+        ('home_title', 'Заголовок главной'),
+        ('home_description', 'Описание главной'),
+        ('contacts_title', 'Заголовок контактов'),
     ]
 
-    key = models.SlugField(
-        max_length=100,
+    key = models.CharField(
+        max_length=50,
         unique=True,
-        verbose_name='Ключ',
-        help_text='Уникальный идентификатор (например: about_text, main_banner)'
+        choices=CONTENT_TYPE_CHOICES,
+        verbose_name='Ключ'
     )
     title = models.CharField(
         max_length=200,
-        verbose_name='Название',
-        help_text='Описание контента для админки'
-    )
-    content_type = models.CharField(
-        max_length=20,
-        choices=CONTENT_TYPE_CHOICES,
-        default='text',
-        verbose_name='Тип контента'
-    )
-    text_value = models.TextField(
         blank=True,
-        null=True,
-        verbose_name='Текстовое значение'
+        verbose_name='Заголовок'
     )
-    image_value = models.ImageField(
-        upload_to='content/',
-        blank=True,
-        null=True,
-        verbose_name='Изображение'
+    content = models.TextField(
+        verbose_name='Содержимое'
     )
     is_active = models.BooleanField(
         default=True,
         verbose_name='Активен'
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания'
     )
     updated_at = models.DateTimeField(
         auto_now=True,
@@ -56,23 +40,15 @@ class SiteContent(models.Model):
 
     class Meta:
         verbose_name = 'Элемент контента'
-        verbose_name_plural = 'Контент сайта'
-        ordering = ['title']
+        verbose_name_plural = 'Элементы контента'
+        ordering = ['key']
 
     def __str__(self):
-        return f'{self.title} ({self.key})'
-
-    def save(self, *args, **kwargs):
-        """Автоматически создаём slug из title если key не заполнен"""
-        if not self.key:
-            self.key = slugify(self.title)
-        super().save(*args, **kwargs)
+        return f'{self.get_key_display()}'
 
     def get_value(self):
-        """Возвращает значение в зависимости от типа контента"""
-        if self.content_type == 'image':
-            return self.image_value
-        return self.text_value
+        """Возвращает значение контента"""
+        return self.content
 
 
 class TeamMember(models.Model):
