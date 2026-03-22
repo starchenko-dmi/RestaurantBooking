@@ -46,6 +46,13 @@ class RestaurantSettingsAdmin(admin.ModelAdmin):
         ('Основное', {
             'fields': ('name', 'is_active')
         }),
+        ('Контактная информация', {
+            'fields': ('address', 'phone', 'email')
+        }),
+        ('Координаты для карты', {
+            'fields': ('latitude', 'longitude'),
+            'description': 'Укажите координаты ресторана (можно получить на maps.yandex.ru)'
+        }),
         ('Время работы', {
             'fields': ('opening_time', 'closing_time', 'closes_next_day')
         }),

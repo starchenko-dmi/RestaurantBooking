@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load core_tags %}
 
 {% block title %}{{ title }} - Ресторан{% endblock %}
 
@@ -17,32 +18,98 @@
             <div class="col-md-6">
                 <h2>Контактная информация</h2>
                 <ul class="list-unstyled">
+                    {% if settings.address %}
                     <li class="mb-3">
                         <i class="bi bi-geo-alt text-primary"></i>
-                        <strong>Адрес:</strong> {{ address }}
+                        <strong>Адрес:</strong> {{ settings.address }}
                     </li>
+                    {% endif %}
+
+                    {% if settings.phone %}
                     <li class="mb-3">
                         <i class="bi bi-telephone text-primary"></i>
-                        <strong>Телефон:</strong> {{ phone }}
+                        <strong>Телефон:</strong> {{ settings.phone }}
                     </li>
+                    {% endif %}
+
+                    {% if settings.email %}
                     <li class="mb-3">
                         <i class="bi bi-envelope text-primary"></i>
-                        <strong>Email:</strong> {{ email }}
+                        <strong>Email:</strong> {{ settings.email }}
                     </li>
+                    {% endif %}
+
                     <li class="mb-3">
                         <i class="bi bi-clock text-primary"></i>
-                        <strong>Часы работы:</strong> {{ work_hours }}
+                        <strong>Часы работы:</strong>
+                        {{ settings.opening_time|date:"H:i" }} - {{ settings.closing_time|date:"H:i" }}
+                        {% if settings.closes_next_day %}(+1 день){% endif %}
                     </li>
                 </ul>
             </div>
+
             <div class="col-md-6">
                 <h2>Мы на карте</h2>
-                {% if map %}
-                    {{ map|safe }}
+
+                {% if settings.latitude and settings.longitude %}
+                <!-- Яндекс Карта -->
+                <div id="yandex-map" style="width: 100%; height: 400px; border-radius: 8px;"></div>
+
+                <script>
+                    // Заменяем запятые на точки
+                    var latStr = '{{ settings.latitude }}'.replace(',', '.');
+                    var lonStr = '{{ settings.longitude }}'.replace(',', '.');
+
+                    var latitude = parseFloat(latStr);
+                    var longitude = parseFloat(lonStr);
+                    var coords = [latitude, longitude];
+
+                    console.log('Координаты:', coords);
+
+                    // Функция инициализации карты
+                    function initMap() {
+                        console.log('Инициализация карты...');
+
+                        try {
+                            var myMap = new ymaps.Map("yandex-map", {
+                                center: coords,
+                                zoom: 16,
+                                controls: ['zoomControl', 'fullscreenControl']
+                            });
+
+                            var myPlacemark = new ymaps.Placemark(coords, {
+                                hintContent: '{{ settings.name }}',
+                                balloonContent: '<strong>{{ settings.name }}</strong><br>{{ settings.address|default:"" }}'
+                            }, {
+                                preset: 'islands#redRestaurantIcon'
+                            });
+
+                            myMap.geoObjects.add(myPlacemark);
+                            myMap.setCenter(coords, 16);
+
+                            console.log('Карта успешно создана!');
+                        } catch (e) {
+                            console.error('Ошибка при создании карты:', e);
+                        }
+                    }
+
+                    // Ждём полной загрузки API Яндекс Карт
+                    if (typeof ymaps !== 'undefined') {
+                        console.log('Ymaps уже загружен, используем ready');
+                        ymaps.ready(initMap);
+                    } else {
+                        console.log('Ymaps ещё не загружен, ждём...');
+                    }
+                </script>
+
+                <!-- Подключаем API с ключом и callback -->
+                <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_maps_api_key }}&lang=ru_RU&onload=initMap" type="text/javascript"></script>
+
                 {% else %}
-                    <div class="ratio ratio-16x9">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2244.0!2d37.6!3d55.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTXCsDQ1JzAwLjAiTiAzN8KwMzYnMDAuMCJF!5e0!3m2!1sru!2sru!4v1234567890" allowfullscreen></iframe>
-                    </div>
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-geo-alt display-1"></i>
+                    <p class="mt-3">Карта скоро появится</p>
+                </div>
                 {% endif %}
             </div>
         </div>

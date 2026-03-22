@@ -91,7 +91,15 @@
     <!-- Подвал -->
     <footer>
         <div class="container text-center">
+            {% load core_tags %}
+            {% get_restaurant_settings as settings %}
+
             <p>&copy; 2026 Ресторан. Все права защищены.</p>
+            <p class="small">
+                <i class="bi bi-clock"></i>
+                Режим работы: {{ settings.opening_time|date:"H:i" }} - {{ settings.closing_time|date:"H:i" }}
+                {% if settings.closes_next_day %}(+1 день){% endif %}
+            </p>
             <p>
                 <a href="#" class="text-white me-3"><i class="bi bi-telegram"></i> Telegram</a>
                 <a href="#" class="text-white me-3"><i class="bi bi-whatsapp"></i> WhatsApp</a>

@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from .models import SiteContent, TeamMember, Service
+from core.models import SiteContent
+from core.utils import get_restaurant_settings
+from django.conf import settings as django_settings
 
 
 def get_content(key, default=''):
@@ -36,13 +39,13 @@ def about(request):
 
 
 def contacts(request):
-    """Страница контактов"""
+
+    restaurant_settings = get_restaurant_settings()
+    api_key = django_settings.YANDEX_MAPS_API_KEY
+
     context = {
         'title': get_content('contacts_title', 'Контакты'),
-        'address': get_content('contacts_address', 'г. Москва, ул. Примерная, 1'),
-        'phone': get_content('contacts_phone', '+7 (999) 000-00-00'),
-        'email': get_content('contacts_email', 'info@restaurant.ru'),
-        'work_hours': get_content('contacts_work_hours', 'Ежедневно с 10:00 до 23:00'),
-        'map': get_content('contacts_map'),
+        'settings': restaurant_settings,
+        'yandex_maps_api_key': api_key,
     }
     return render(request, 'core/contacts.html', context)

@@ -1,14 +1,19 @@
-import os
-from pathlib import Path
 import environ
+from pathlib import Path
 
-# Инициализация environ
-env = environ.Env()
-environ.Env.read_env()
-
+# СНАЧАЛА определяем BASE_DIR
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Создаём env объект
+env = environ.Env()
+
+# ПОТОМ загружаем .env (теперь он знает где искать)
+environ.Env.read_env(BASE_DIR / '.env')
+YANDEX_MAPS_API_KEY = env('YANDEX_MAPS_API_KEY', default='')
+
+
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me-in-production')
+
 DEBUG = env.bool('DEBUG', default=True)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])

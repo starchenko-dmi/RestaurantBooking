@@ -212,6 +212,34 @@ class RestaurantSettings(models.Model):
         auto_now=True,
         verbose_name='Дата обновления'
     )
+    address = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name='Адрес ресторана'
+    )
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        verbose_name='Широта (latitude)'
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        verbose_name='Долгота (longitude)'
+    )
+    phone = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name='Телефон'
+    )
+    email = models.EmailField(
+        blank=True,
+        verbose_name='Email'
+    )
 
     class Meta:
         verbose_name = 'Настройки ресторана'
@@ -222,7 +250,6 @@ class RestaurantSettings(models.Model):
         return f'{self.name} ({self.opening_time} - {self.closing_time}{next_day})'
 
     def save(self, *args, **kwargs):
-        # Разрешаем только одну запись настроек
         if not self.pk and RestaurantSettings.objects.exists():
             raise ValidationError('Может быть только одна запись настроек')
         return super().save(*args, **kwargs)
@@ -247,7 +274,6 @@ class RestaurantSettings(models.Model):
         """Получить datetime закрытия для данной даты"""
         closing_datetime = datetime.combine(date, self.closing_time)
 
-        # Если закрывается на следующий день, добавляем 1 день
         if self.closes_next_day:
             closing_datetime += timedelta(days=1)
 
