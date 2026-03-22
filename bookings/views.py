@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from datetime import timedelta, datetime, time as time_class  # ← Добавили импорты
+from datetime import timedelta, datetime, time as time_class
 from .models import Reservation, Table
 from .forms import ReservationForm, TableChoiceForm
+from core.utils import get_opening_time, get_closing_time, get_closing_datetime, get_restaurant_settings
 
 
 def reservation_create(request):
@@ -18,30 +20,39 @@ def reservation_create(request):
             duration = form.cleaned_data['duration']
             guests_count = form.cleaned_data['guests_count']
 
-            # 🔥 Создаём datetime объекты (дата + время)
+            # Получаем настройки
+            settings = get_restaurant_settings()
+            opening_time = settings.opening_time
+
+            # Создаём datetime объекты
             start_datetime = datetime.combine(date, time_value)
             end_datetime = start_datetime + timedelta(hours=duration)
 
-            # Время закрытия ресторана (23:00 в день бронирования)
-            closing_datetime = datetime.combine(date, time_class(23, 0))
-            opening_datetime = datetime.combine(date, time_class(10, 0))
+            # Получаем datetime открытия и закрытия
+            opening_datetime = datetime.combine(date, opening_time)
+            closing_datetime = datetime.combine(date, settings.closing_time)
+            if settings.closes_next_day:
+                closing_datetime += timedelta(days=1)
 
             # Проверяем время начала
             if start_datetime < opening_datetime:
-                form.add_error('time', 'Ресторан открывается в 10:00')
+                form.add_error('time', f'Ресторан открывается в {opening_time.strftime("%H:%M")}')
                 return render(request, 'bookings/reservation_create.html', {'form': form})
 
-            # 🔥 Проверяем время окончания (с учётом перехода за полночь!)
+            # Проверяем время окончания
             if end_datetime > closing_datetime:
-                max_hours = (closing_datetime - start_datetime).seconds // 3600
+                max_delta = closing_datetime - start_datetime
+                max_hours = int(max_delta.total_seconds() // 3600)
+
+                closing_display = closing_datetime.strftime("%d.%m.%Y в %H:%M")
+
                 form.add_error('duration',
                                f'Бронирование закончится {end_datetime.strftime("%d.%m.%Y в %H:%M")}, '
-                               f'что после закрытия ({closing_datetime.strftime("%H:%M")}). '
+                               f'что после закрытия ({closing_display}). '
                                f'Максимальная длительность — {max_hours} ч.'
                                )
                 return render(request, 'bookings/reservation_create.html', {'form': form})
 
-            # Рассчитываем время окончания
             end_time_value = end_datetime.time()
 
             available_tables = Table.objects.filter(

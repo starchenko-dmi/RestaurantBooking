@@ -1,5 +1,7 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
+from datetime import time, datetime, timedelta
 
 
 class SiteContent(models.Model):
@@ -163,3 +165,90 @@ class Service(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class RestaurantSettings(models.Model):
+    """Настройки ресторана (время работы, параметры бронирования)"""
+
+    name = models.CharField(
+        max_length=200,
+        default='Настройки',
+        verbose_name='Название'
+    )
+    opening_time = models.TimeField(
+        default=time(10, 0),
+        verbose_name='Время открытия'
+    )
+    closing_time = models.TimeField(
+        default=time(23, 0),
+        verbose_name='Время закрытия'
+    )
+    closes_next_day = models.BooleanField(
+        default=False,
+        verbose_name='Закрывается на следующий день',
+        help_text='Отметьте, если ресторан работает после полуночи'
+    )
+    min_booking_duration = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name='Мин. длительность бронирования (часов)'
+    )
+    max_booking_duration = models.PositiveSmallIntegerField(
+        default=5,
+        verbose_name='Макс. длительность бронирования (часов)'
+    )
+    min_advance_booking = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name='Мин. время до бронирования (часов)'
+    )
+    max_advance_booking = models.PositiveSmallIntegerField(
+        default=60,
+        verbose_name='Макс. время до бронирования (дней)'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Активны'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата обновления'
+    )
+
+    class Meta:
+        verbose_name = 'Настройки ресторана'
+        verbose_name_plural = 'Настройки ресторана'
+
+    def __str__(self):
+        next_day = ' (+1)' if self.closes_next_day else ''
+        return f'{self.name} ({self.opening_time} - {self.closing_time}{next_day})'
+
+    def save(self, *args, **kwargs):
+        # Разрешаем только одну запись настроек
+        if not self.pk and RestaurantSettings.objects.exists():
+            raise ValidationError('Может быть только одна запись настроек')
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def get_settings(cls):
+        """Получить настройки (создаёт если нет)"""
+        settings, created = cls.objects.get_or_create(
+            pk=1,
+            defaults={
+                'name': 'Основные настройки',
+                'opening_time': time(10, 0),
+                'closing_time': time(23, 0),
+                'closes_next_day': False,
+                'min_booking_duration': 1,
+                'max_booking_duration': 5,
+            }
+        )
+        return settings
+
+    def get_closing_datetime(self, date):
+        """Получить datetime закрытия для данной даты"""
+        closing_datetime = datetime.combine(date, self.closing_time)
+
+        # Если закрывается на следующий день, добавляем 1 день
+        if self.closes_next_day:
+            closing_datetime += timedelta(days=1)
+
+        return closing_datetime

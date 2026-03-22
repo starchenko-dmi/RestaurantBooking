@@ -5,9 +5,40 @@ from django.utils import timezone
 from datetime import datetime, time, timedelta
 from .models import Table, Reservation
 
-
 User = get_user_model()
 
+
+class ReservationViewTests(TestCase):
+    """Тесты для views бронирования"""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.table = Table.objects.create(
+            number='1',
+            capacity=4,
+            zone='main',
+            is_active=True
+        )
+        self.tomorrow = timezone.now().date() + timedelta(days=1)
+
+        # Создаём настройки ресторана
+        from core.models import RestaurantSettings
+        RestaurantSettings.objects.get_or_create(
+            pk=1,
+            defaults={
+                'name': 'Тестовые настройки',
+                'opening_time': time(10, 0),
+                'closing_time': time(23, 0),
+                'closes_next_day': False,
+                'min_booking_duration': 1,
+                'max_booking_duration': 5,
+            }
+        )
 
 class TableModelTest(TestCase):
     """Тесты модели Table"""

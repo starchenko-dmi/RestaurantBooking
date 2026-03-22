@@ -2,6 +2,14 @@ from django import forms
 from django.utils import timezone
 from datetime import datetime, time as time_class, timedelta
 from .models import Reservation, Table
+from core.utils import (
+    get_opening_time,
+    get_closing_time,
+    get_closing_datetime,
+    get_min_booking_duration,
+    get_max_booking_duration,
+    get_restaurant_settings
+)
 
 
 class ReservationForm(forms.ModelForm):
@@ -63,6 +71,13 @@ class ReservationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['date'].widget.attrs['min'] = timezone.now().date().isoformat()
 
+        # Динамически устанавливаем min/max для duration
+        min_duration = get_min_booking_duration()
+        max_duration = get_max_booking_duration()
+        self.fields['duration'].min_value = min_duration
+        self.fields['duration'].max_value = max_duration
+        self.fields['duration'].help_text = f'От {min_duration} до {max_duration} часов'
+
     def clean_date(self):
         """Проверка даты"""
         date = self.cleaned_data.get('date')
@@ -73,20 +88,40 @@ class ReservationForm(forms.ModelForm):
     def clean_time(self):
         """Проверка времени"""
         time_value = self.cleaned_data.get('time')
+        settings = get_restaurant_settings()
+        opening_time = settings.opening_time
+        closing_time = settings.closing_time
+
         if time_value:
-            # Ресторан работает с 10:00 до 23:00
-            if time_value < time_class(10, 0):
-                raise forms.ValidationError('Ресторан открывается в 10:00')
-            if time_value >= time_class(22, 0):
-                raise forms.ValidationError(
-                    'Последнее бронирование должно начинаться не позже 22:00 (минимум 1 час до закрытия)')
+            # Если закрывается на следующий день (например, 18:00 - 01:00)
+            if settings.closes_next_day:
+                # Разрешаем бронирование до closing_time следующего дня
+                if time_value < opening_time and time_value < closing_time:
+                    # Время до открытия (например, 10:00 при открытии 18:00)
+                    raise forms.ValidationError(
+                        f'Ресторан открывается в {opening_time.strftime("%H:%M")}'
+                    )
+            else:
+                # Обычный режим (закрывается в тот же день)
+                if time_value < opening_time:
+                    raise forms.ValidationError(
+                        f'Ресторан открывается в {opening_time.strftime("%H:%M")}'
+                    )
+                if time_value >= closing_time:
+                    raise forms.ValidationError(
+                        f'Последнее бронирование должно быть до {closing_time.strftime("%H:%M")}'
+                    )
+
         return time_value
 
     def clean_duration(self):
         """Проверка длительности"""
         duration = self.cleaned_data.get('duration')
-        if duration and (duration < 1 or duration > 5):
-            raise forms.ValidationError('Длительность должна быть от 1 до 5 часов')
+        min_duration = get_min_booking_duration()
+        max_duration = get_max_booking_duration()
+
+        if duration and (duration < min_duration or duration > max_duration):
+            raise forms.ValidationError(f'Длительность должна быть от {min_duration} до {max_duration} часов')
         return duration
 
     def clean(self):
@@ -94,28 +129,49 @@ class ReservationForm(forms.ModelForm):
         cleaned_data = super().clean()
         time_value = cleaned_data.get('time')
         duration = cleaned_data.get('duration')
-        date = cleaned_data.get('date')  # ← Получаем дату бронирования
+        date = cleaned_data.get('date')
 
         if time_value and duration and date:
-            # Рассчитываем время окончания на основе ДАТЫ БРОНИРОВАНИЯ
-            end_datetime = datetime.combine(date, time_value) + timedelta(hours=duration)
-            end_time = end_datetime.time()
+            settings = get_restaurant_settings()
+            opening_time = settings.opening_time
 
-            # Проверяем, что окончание не позже 23:00
-            if end_time > time_class(23, 0):
+            # Создаём datetime начала и окончания
+            start_datetime = datetime.combine(date, time_value)
+            end_datetime = start_datetime + timedelta(hours=duration)
+
+            # Получаем datetime закрытия (с учётом следующего дня)
+            closing_datetime = datetime.combine(date, settings.closing_time)
+            if settings.closes_next_day:
+                closing_datetime += timedelta(days=1)
+
+            # Проверяем, что начало не раньше открытия
+            opening_datetime = datetime.combine(date, opening_time)
+            if start_datetime < opening_datetime:
                 raise forms.ValidationError({
-                    'duration': f'Бронирование не может закончиться после 23:00. При выбранном времени {time_value.strftime("%H:%M")} максимальная длительность — {self._get_max_duration(time_value)} ч.'
+                    'time': f'Ресторан открывается в {opening_time.strftime("%H:%M")}'
+                })
+
+            # Проверяем, что окончание не позже закрытия
+            if end_datetime > closing_datetime:
+                # Считаем максимальную длительность
+                max_delta = closing_datetime - start_datetime
+                max_hours = max_delta.total_seconds() // 3600
+
+                closing_display = closing_datetime.strftime("%H:%M")
+                if closing_datetime.date() > date:
+                    closing_display += ' (+1)'
+
+                end_display = end_datetime.strftime("%H:%M")
+                if end_datetime.date() > date:
+                    end_display += ' (+1)'
+
+                raise forms.ValidationError({
+                    'duration': f'Бронирование закончится в {end_display}, '
+                                f'что после закрытия ({closing_display}). '
+                                f'Максимальная длительность — {int(max_hours)} ч.'
                 })
 
         return cleaned_data
-
-    def _get_max_duration(self, time_value):
-        """Вычисляет максимальную длительность для данного времени"""
-        closing_time = time_class(23, 0)
-        delta = datetime.combine(timezone.now().date(), closing_time) - datetime.combine(timezone.now().date(),
-                                                                                         time_value)
-        hours = delta.seconds // 3600
-        return min(hours, 5)  # Не больше 5 часов
 
 
 class TableChoiceForm(forms.Form):
@@ -131,13 +187,11 @@ class TableChoiceForm(forms.Form):
     def __init__(self, *args, date=None, time=None, guests_count=None, duration=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Фильтруем столики по вместимости
         if guests_count:
             self.fields['table'].queryset = self.fields['table'].queryset.filter(
                 capacity__gte=guests_count
             )
 
-        # Фильтруем доступные столики
         if date and time and duration:
             available_tables = []
             for table in self.fields['table'].queryset:
