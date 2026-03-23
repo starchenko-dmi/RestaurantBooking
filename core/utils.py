@@ -1,7 +1,7 @@
 from .models import RestaurantSettings, SiteContent
 
 
-def get_content(key, default=''):
+def get_content(key, default=""):
     """
     Хелпер для получения контента по ключу
 
@@ -19,11 +19,7 @@ def get_content(key, default=''):
         return content.content or default
     except SiteContent.DoesNotExist:
         # Авто-создаём запись с дефолтным значением
-        SiteContent.objects.create(
-            key=key,
-            content=default,
-            is_active=True
-        )
+        SiteContent.objects.create(key=key, content=default, is_active=True)
         return default
 
 

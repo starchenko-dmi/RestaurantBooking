@@ -381,6 +381,7 @@
     <footer>
         <div class="container">
             <div class="row">
+                <!-- О ресторане -->
                 <div class="col-md-4 mb-4">
                     <h5><i class="bi bi-cup-hot-fill me-2"></i>Ресторан</h5>
                     <p class="small opacity-75">
@@ -389,6 +390,7 @@
                     </p>
                 </div>
 
+                <!-- Режим работы -->
                 <div class="col-md-4 mb-4">
                     <h5><i class="bi bi-clock me-2"></i>Режим работы</h5>
                     {% load core_tags %}
@@ -401,27 +403,49 @@
                         <li>
                             <i class="bi bi-clock me-2 text-warning"></i>
                             {{ settings.opening_time|date:"H:i" }} - {{ settings.closing_time|date:"H:i" }}
-                            {% if settings.closes_next_day %}<span class="badge bg-warning text-dark ms-1"></span>{% endif %}
                         </li>
                     </ul>
                 </div>
 
+                <!-- Соцсети -->
                 <div class="col-md-4 mb-4">
                     <h5><i class="bi bi-share me-2"></i>Мы в соцсетях</h5>
                     <div class="social-links">
-                        <a href="#" class="text-white" title="Telegram"><i class="bi bi-telegram"></i></a>
-                        <a href="#" class="text-white" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
-                        <a href="#" class="text-white" title="VK"><i class="bi bi-vk"></i></a>
-                        <a href="#" class="text-white" title="Instagram"><i class="bi bi-instagram"></i></a>
+                        {% for link in social_links %}
+                            <a href="{{ link.url }}" target="_blank"
+                               class="text-white me-3 d-inline-flex align-items-center justify-content-center"
+                               title="{{ link.display_name }}"
+                               style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 215, 0, 0.15); transition: all 0.3s;">
+                                <i class="{{ link.icon_class }}" style="font-size: 1.5rem;"></i>
+                            </a>
+                        {% empty %}
+                            <!-- Заглушка, если соцсети не добавлены -->
+                            <a href="#" class="text-white me-3" title="Telegram"
+                               style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 215, 0, 0.15); display: inline-flex; align-items: center; justify-content-center;">
+                                <i class="bi bi-telegram" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <a href="#" class="text-white me-3" title="WhatsApp"
+                               style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 215, 0, 0.15); display: inline-flex; align-items: center; justify-content-center;">
+                                <i class="bi bi-whatsapp" style="font-size: 1.5rem;"></i>
+                            </a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
 
-            <div class="footer-bottom text-center small opacity-75">
+            <div class="footer-bottom text-center small opacity-75 mt-4 pt-3" style="border-top: 1px solid rgba(255,255,255,0.1);">
                 <p class="mb-2">&copy; 2026 Ресторан. Все права защищены.</p>
                 <p class="mb-0">
-                    <a href="#" class="text-white-50 me-2">Политика конфиденциальности</a> |
-                    <a href="#" class="text-white-50 ms-2">Публичная оферта</a>
+                    {% for doc in footer_documents %}
+                        <a href="{% url 'core:document' doc.slug %}" class="text-white-50 hover-warning">
+                            {{ doc.title }}
+                        </a>
+                        {% if not forloop.last %} | {% endif %}
+                    {% empty %}
+                        <!-- Заглушка, если документы не добавлены -->
+                        <a href="#" class="text-white-50">Политика конфиденциальности</a> |
+                        <a href="#" class="text-white-50">Публичная оферта</a>
+                    {% endfor %}
                 </p>
             </div>
         </div>
