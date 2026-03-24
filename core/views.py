@@ -1,13 +1,13 @@
-from .models import FooterDocument
-from django.contrib import messages
 from django.conf import settings as django_settings
-from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404, redirect, render
+
 from core.models import Service, TeamMember
 from core.utils import get_content, get_restaurant_settings
-from django.core.mail import send_mail
-from django.conf import settings
-from .forms import ContactForm
 
+from .forms import ContactForm
+from .models import FooterDocument
 
 
 def home(request):
@@ -43,41 +43,36 @@ def contacts(request):
     """Страница контактов"""
     restaurant_settings = get_restaurant_settings()
 
-    from django.core.mail import send_mail
-    from django.core.exceptions import ImproperlyConfigured
-
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ContactForm(request.POST)
         if form.is_valid():
-            name = form.cleaned_data['name']
-            email = form.cleaned_data['email']
-            message = form.cleaned_data['message']
+            name = form.cleaned_data["name"]
+            email = form.cleaned_data["email"]
+            message = form.cleaned_data["message"]
 
             try:
                 send_mail(
-                    subject=f'Новое сообщение от {name}',
-                    message=f'От: {email}\n\nСообщение:\n{message}',
+                    subject=f"Новое сообщение от {name}",
+                    message=f"От: {email}\n\nСообщение:\n{message}",
                     from_email=django_settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[restaurant_settings.email],
                     fail_silently=False,
                 )
-                messages.success(request, 'Спасибо! Ваше сообщение отправлено.')
+                messages.success(request, "Спасибо! Ваше сообщение отправлено.")
             except Exception as e:
-                messages.error(request, f'Ошибка отправки: {e}')
-                # Для отладки — выведи в консоль
-                print(f"❌ EMAIL ERROR: {type(e).__name__}: {e}")
+                messages.error(request, f"Ошибка отправки: {e}")
 
-            return redirect('core:contacts')
+            return redirect("core:contacts")
     else:
         form = ContactForm()  # ← Создаём ПУСТУЮ форму для GET запроса
 
     context = {
-        'title': get_content('contacts_title', 'Контакты'),
-        'settings': restaurant_settings,
-        'yandex_maps_api_key': django_settings.YANDEX_MAPS_API_KEY,
-        'form': form,
+        "title": get_content("contacts_title", "Контакты"),
+        "settings": restaurant_settings,
+        "yandex_maps_api_key": django_settings.YANDEX_MAPS_API_KEY,
+        "form": form,
     }
-    return render(request, 'core/contacts.html', context)
+    return render(request, "core/contacts.html", context)
 
 
 def document_view(request, slug):
