@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет - Ресторан{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Боковая панель -->
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card shadow">
+                    <div class="card-body text-center">
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" class="rounded-circle mb-3" width="120" height="120" style="object-fit: cover;">
+                        {% else %}
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 120px; height: 120px; font-size: 48px;">
+                                {{ user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                        <p class="text-muted mb-3">{{ user.email }}</p>
+
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'users:profile_edit' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil"></i> Редактировать
+                            </a>
+                            <a href="{% url 'users:profile_delete' %}" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash"></i> Удалить аккаунт
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Информация -->
+                <div class="card shadow mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Информация</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Телефон:</strong> {{ user.phone|default:"Не указан" }}</li>
+                            <li><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y" }}</li>
+                            <li><strong>Всего бронирований:</strong> {{ user.reservations.count }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Основной контент -->
+            <div class="col-md-8 col-lg-9">
+                <!-- Активные бронирования -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check"></i> Активные бронирования
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if active_reservations %}
+                            <div class="row g-3">
+                                {% for reservation in active_reservations %}
+                                    <div class="col-md-6">
+                                        <div class="card {% if reservation.status == 'confirmed' %}border-success{% else %}border-warning{% endif %}">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h6 class="mb-1">Столик {{ reservation.table.number }}</h6>
+                                                        <p class="mb-0 small">
+                                                            {{ reservation.date|date:"d.m.Y" }} в {{ reservation.time|time:"H:i" }}
+                                                        </p>
+                                                    </div>
+                                                    <span class="badge {% if reservation.status == 'confirmed' %}bg-success{% else %}bg-warning{% endif %}">
+                                                        {{ reservation.get_status_display }}
+                                                    </span>
+                                                </div>
+                                                <a href="{% url 'bookings:reservation_detail' reservation.pk %}" class="btn btn-sm btn-outline-primary mt-2">
+                                                    <i class="bi bi-eye"></i> Подробнее
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">У вас нет активных бронирований</p>
+                            <a href="{% url 'bookings:reservation_create' %}" class="btn btn-primary mt-3">
+                                <i class="bi bi-plus-circle"></i> Забронировать столик
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- История бронирований -->
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history"></i> История бронирований
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if history_reservations %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Дата</th>
+                                            <th>Время</th>
+                                            <th>Столик</th>
+                                            <th>Статус</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for reservation in history_reservations %}
+                                            <tr>
+                                                <td>{{ reservation.date|date:"d.m.Y" }}</td>
+                                                <td>{{ reservation.time|time:"H:i" }}</td>
+                                                <td>{{ reservation.table.number }}</td>
+                                                <td>
+                                                    <span class="badge
+                                                        {% if reservation.status == 'completed' %}bg-success
+                                                        {% elif reservation.status == 'cancelled' %}bg-danger
+                                                        {% else %}bg-secondary{% endif %}">
+                                                        {{ reservation.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'bookings:reservation_detail' reservation.pk %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">История пуста</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -19,7 +19,34 @@ black = "^26.3.1"
 flake8 = "^7.3.0"
 pytest = "^9.0.2"
 pytest-django = "^4.12.0"
+coverage = "^7.13.5"
+isort = "^8.0.1"
+pylint = "^4.0.5"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ['py313']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | __pycache__
+  | migrations
+  | staticfiles
+  | htmlcov
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["migrations", "staticfiles", "venv", ".venv", "htmlcov"]
+skip_glob = ["*/migrations/*"]
+known_django = ["django"]
+known_first_party = ["core", "bookings", "users", "config"]

@@ -54,3 +54,6 @@ __pycache__/
 *.ctl
 gunicorn.pid
 gunicorn.ctl
+
+# В корне проекта открой .gitignore и добавь:
+staticfiles/

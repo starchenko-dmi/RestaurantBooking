@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Ресторан{% endblock %}
+
+{% block content %}
+<!-- Hero секция с динамическим фоном -->
+<section class="hero-section text-center"
+         style="background: linear-gradient(135deg, rgba(93, 64, 55, 0.5) 0%, rgba(139, 69, 19, 0.4) 50%, rgba(165, 42, 42, 0.5) 100%),
+                        url('{% if hero_image %}{{ hero_image.image.url }}{% else %}{% static "img/restaurant-hero.jpg" %}{% endif %}') center/cover no-repeat;">
+    <div class="container">
+        <h1 class="display-4 fw-bold">{{ title }}</h1>
+        <p class="lead">{{ description }}</p>
+        <a href="{% url 'bookings:reservation_create' %}" class="btn btn-primary btn-lg mt-3">
+            <i class="bi bi-calendar-check"></i> Забронировать столик
+        </a>
+    </div>
+</section>
+
+<!-- Услуги -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Наши услуги</h2>
+        <div class="row g-4">
+            {% for service in services %}
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    {% if service.image %}
+                        <img src="{{ service.image.url }}" class="card-img-top" alt="{{ service.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        {% if service.icon %}
+                            <i class="bi {{ service.icon }} display-4 text-primary"></i>
+                        {% endif %}
+                        <h5 class="card-title mt-3">{{ service.title }}</h5>
+                        <p class="card-text">{{ service.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Услуги скоро появятся</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- О ресторане (кратко) -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h2>О нашем ресторане</h2>
+                <p>{{ about_text }}</p>
+                <a href="{% url 'core:about' %}" class="btn btn-outline-primary">Подробнее</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
