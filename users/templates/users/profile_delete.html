@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление аккаунта - Ресторан{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> Удаление аккаунта
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Вы уверены, что хотите удалить свой аккаунт?</p>
+
+                        <div class="alert alert-warning">
+                            <strong>Внимание!</strong> Это действие необратимо. Все ваши бронирования будут удалены.
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-danger btn-lg">
+                                    <i class="bi bi-trash"></i> Да, удалить аккаунт
+                                </button>
+                                <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Нет, вернуться
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
